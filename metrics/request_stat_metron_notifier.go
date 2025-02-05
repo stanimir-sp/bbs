@@ -124,12 +124,12 @@ func (notifier *RequestStatMetronNotifier) Run(signals <-chan os.Signal, ready c
 
 			for _, route := range notifier.advancedMetricsConfig.RouteConfig.RequestCountRoutes {
 				requestCountMetricValue := readAndResetMetric(&notifier.requestMetricsPerRoute[route].requestCount, &notifier.lock)
-				notifier.emitRequestCount(requestCounter + "." + route, requestCountMetricValue, logger)
+				notifier.emitRequestCount(requestCounter+"."+route, requestCountMetricValue, logger)
 			}
 
 			for _, route := range notifier.advancedMetricsConfig.RouteConfig.RequestLatencyRoutes {
 				requestLatencyMetricValue := readAndResetMetric(&notifier.requestMetricsPerRoute[route].maxRequestLatency, &notifier.lock)
-				notifier.emitRequestLatency(requestLatencyDuration + "." + route, requestLatencyMetricValue, logger)
+				notifier.emitRequestLatency(requestLatencyDuration+"."+route, requestLatencyMetricValue, logger)
 			}
 		case <-signals:
 			return nil
@@ -142,7 +142,6 @@ func (notifier *RequestStatMetronNotifier) emitRequestLatency(
 	requestLatencyMetricValue time.Duration,
 	logger lager.Logger) {
 
-	//TODO: Check what happens if the latency is 0 and emitted/not emitted
 	logger.Info("sending-latency", lager.Data{"latency": requestLatencyMetricValue})
 	metricErr := notifier.metronClient.SendDuration(requestLatencyMetricName, requestLatencyMetricValue)
 	if metricErr != nil {

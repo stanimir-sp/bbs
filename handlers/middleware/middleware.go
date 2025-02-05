@@ -66,7 +66,7 @@ type metadata struct {
 
 type handlerWithMetadata func(w http.ResponseWriter, r *http.Request) metadata
 
-func inithandlerWithMetadata(f http.HandlerFunc) handlerWithMetadata {
+func initHandlerWithMetadata(f http.HandlerFunc) handlerWithMetadata {
 	return func(w http.ResponseWriter, r *http.Request) metadata {
 		f(w, r)
 		return metadata{}
@@ -103,36 +103,16 @@ func updateRequestCount(f handlerWithMetadata, emitter Emitter, route string) ha
 	}
 }
 
-//TODO: remove this function
-//func RecordRequestCount(handler http.Handler, emitter Emitter) http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		emitter.IncrementRequestCounter(1)
-//		handler.ServeHTTP(w, r)
-//	}
-//}
-/*
-func RecordRequestCount(f http.HandlerFunc, emitter Emitter) http.HandlerFunc {
+func UpdateRequestCount(f http.HandlerFunc, emitter Emitter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		emitter.IncrementRequestCounter(1, "")
 		f(w, r)
 	}
-}*/
-/*
-func RecordDefaultMetrics(f http.HandlerFunc, emitter Emitter) http.HandlerFunc {
-	return RecordLatency(RecordRequestCount(f, emitter), emitter)
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		emitter.IncrementRequestCounter(1, "")
-		f(w, r)
-	}
-
-	RecordAdvancedMetrics(RecordRequestCount(RecordLatency(f, emitter), emitter), emitter, route)
-	RecordAdvancedMetrics(RecordRequestCount(RecordLatency(f, emitter), emitter), emitter, route)
-}*/
+}
 
 func RecordMetrics(f http.HandlerFunc, emitter Emitter, calledRoute string) http.HandlerFunc {
 	// Record Default Metrics
-	handlerMeta := inithandlerWithMetadata(f)
+	handlerMeta := initHandlerWithMetadata(f)
 	handlerMeta = recordLatency(handlerMeta)
 
 	handlerMeta = updateLatency(handlerMeta, emitter, "")
@@ -159,10 +139,4 @@ func recordAdvancedMetrics(handlerMeta handlerWithMetadata, emitter Emitter, cal
 	}
 
 	return handlerMeta
-
-	// 1. Execute default metrics
-	// 2. read config
-	// 3. If enabled record metrics for endpoints
-	//3. Retrieve metadata (What's the current endpoint?)
-	//3. Create a structure that keeps a mapping between each endpoint and it's notifier
 }
